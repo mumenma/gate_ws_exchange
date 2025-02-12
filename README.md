@@ -6,6 +6,6 @@
    yarn init -y
    yarn add ts-node typescript
    yarn add --dev @types/node
-   ts-node main.ts 
+   npx tsc --init # 初始 TS 项目
  
  ts-node src/main.ts
