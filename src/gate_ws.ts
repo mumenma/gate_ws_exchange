@@ -25,6 +25,8 @@ export class GateWebSocket {
             // console.log(response)
             const event = response["event"];
             const ch = response["channel"];
+            const result = response["result"];
+                            
             switch (event) {
                 case "subscribe":
                     console.log(ch+"订阅成功")
@@ -32,12 +34,11 @@ export class GateWebSocket {
                 case "update":
                     switch (ch) {
                         case "futures.tickers":
-                            const result = response["result"];
                             for (const item of result) {
                                 const contract = item["contract"];
                                 const funding_rate = item["funding_rate"];
                                 // const funding_rate_indicative = item["funding_rate_indicative"];
-                                console.log(contract,"资金费率",funding_rate)//,funding_rate_indicative)
+                                // console.log(contract,"资金费率",funding_rate)//,funding_rate_indicative)
                             }
                             break;
                         default:
@@ -45,8 +46,28 @@ export class GateWebSocket {
                             break;
                     }
                     break;
+                case "all":
+                    switch (ch) {
+                        case "futures.order_book":
+
+                            const asks = result["asks"];
+                            const bids = result["bids"];
+                            const askItem = asks[0];
+                            const bidItem = bids[0];
+                            const askPrice = askItem["p"];
+                            const askSize = askItem["s"];
+                            const bidPrice = bidItem["p"];
+                            const bidSize = bidItem["s"];
+                            const contract = result["contract"];
+                            console.log(contract, askPrice,askSize,bidPrice,bidSize)
+                            break;
+                        default:
+                            console.log(ch+"更新成功")
+                            break;
+                    }
+                    break
                 default:
-                    console.log(decompressedData)
+                    console.log(event, decompressedData)
                     break;
             }
             // const ch = response["channel"];
@@ -98,18 +119,25 @@ export class GateWebSocket {
         this.ws.onopen = () => {
             console.log('cointr ws connected');
 
-            const sendDic = {
+            const tickersSendDic = {
                 time: Date.now(),
                 channel: "futures.tickers",
                 event: "subscribe",
                 payload: ["DOGE_USDT"]
             }
-            const sendStr = JSON.stringify(sendDic)
-            console.log(sendStr)
-            this.ws?.send(sendStr);
+            const tickersSendStr = JSON.stringify(tickersSendDic)
+            console.log(tickersSendStr)
+            this.ws?.send(tickersSendStr);
 
-
-
+            const orderbookSendDic = {
+                time: Date.now(),
+                channel: "futures.order_book",
+                event: "subscribe",
+                payload: ["DOGE_USDT","1","0"]
+            }
+            const orderbookSendStr = JSON.stringify(orderbookSendDic)
+            console.log(orderbookSendStr)
+            this.ws?.send(orderbookSendStr);
             // const symbolList =  SymbolListManager.cointrSymbolList();
             // const args: { bar: string; instId: string; initialNum: number }[] = [];
             // for (const symbol of symbolList) {
