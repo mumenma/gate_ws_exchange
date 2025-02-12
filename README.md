@@ -8,3 +8,4 @@
    yarn add --dev @types/node
    ts-node main.ts 
  
+ ts-node src/main.ts
