@@ -1,3 +1,4 @@
+import { channel } from 'diagnostics_channel';
 import WebSocket from 'ws';
 
 export class GateWebSocket {
@@ -19,45 +20,96 @@ export class GateWebSocket {
 
     
     private async dealMessage(decompressedData: string) {
-        console.log(decompressedData)
         try {
             const response = JSON.parse(decompressedData);
+            // console.log(response)
+            const event = response["event"];
             const ch = response["channel"];
-            if (ch == "spot_kline") {
-                const action = response["action"];
-                if (action == "update") {
-                    console.log(decompressedData)      
-                }
-            } else {
-                const code = response["code"]
-                if (code == 0) {
-                    const msg = response["msg"]
-                    if (msg == "connect.success") {
-                        const symbolList = ["BTCUSDT"];//  SymbolListManager.cointrSymbolList();
-                        const args: { bar: string; instId: string; initialNum: number }[] = [];
-                        for (const symbol of symbolList) {
-                            args.push({"bar":"15m","instId":symbol,"initialNum":1});
-                        }
-                        const sendDic = {"args":args,"channel":"spot_kline","op":"subscribe"};
-                        const sendStr = JSON.stringify(sendDic)
-                        console.log(sendStr)
-                        this.ws?.send(sendStr);
+            switch (event) {
+                case "subscribe":
+                    console.log(ch+"订阅成功")
+                    break;
+                case "update":
+                    switch (ch) {
+                        case "futures.tickers":
+                            const result = response["result"];
+                            for (const item of result) {
+                                const contract = item["contract"];
+                                const funding_rate = item["funding_rate"];
+                                // const funding_rate_indicative = item["funding_rate_indicative"];
+                                console.log(contract,"资金费率",funding_rate)//,funding_rate_indicative)
+                            }
+                            break;
+                        default:
+                            console.log(ch+"更新成功")
+                            break;
                     }
-                } else {
-                    console.error("错误返回:"+decompressedData);
-                }
+                    break;
+                default:
+                    console.log(decompressedData)
+                    break;
             }
+            // const ch = response["channel"];
+            // if (ch == "futures.tickers") {
+            //     const action = response["action"];
+            //     if (action == "update") {
+            //         console.log(decompressedData)      
+            //     }
+            // }
         } catch (error) {
             console.log('出现错误:', error);
         }
+        // try {
+        //     const response = JSON.parse(decompressedData);
+        //     const ch = response["channel"];
+        //     if (ch == "spot_kline") {
+        //         const action = response["action"];
+        //         if (action == "update") {
+        //             console.log(decompressedData)      
+        //         }
+        //     } else {
+        //         const code = response["code"]
+        //         if (code == 0) {
+        //             const msg = response["msg"]
+        //             if (msg == "connect.success") {
+        //                 const symbolList = ["BTCUSDT"];//  SymbolListManager.cointrSymbolList();
+        //                 const args: { bar: string; instId: string; initialNum: number }[] = [];
+        //                 for (const symbol of symbolList) {
+        //                     args.push({"bar":"15m","instId":symbol,"initialNum":1});
+        //                 }
+        //                 const sendDic = {"args":args,"channel":"spot_kline","op":"subscribe"};
+        //                 const sendStr = JSON.stringify(sendDic)
+        //                 console.log(sendStr)
+        //                 this.ws?.send(sendStr);
+        //             }
+        //         } else {
+        //             console.error("错误返回:"+decompressedData);
+        //         }
+        //     }
+        // } catch (error) {
+        //     console.log('出现错误:', error);
+        // }
     }
 
     private async connect() {
         console.log("开始连cointr Websocket")
-        this.ws = new WebSocket(`wss://www.cointr.com/ws`);
+        this.ws = new WebSocket(`wss://fx-ws.gateio.ws/v4/ws/usdt`);
 
         this.ws.onopen = () => {
             console.log('cointr ws connected');
+
+            const sendDic = {
+                time: Date.now(),
+                channel: "futures.tickers",
+                event: "subscribe",
+                payload: ["DOGE_USDT"]
+            }
+            const sendStr = JSON.stringify(sendDic)
+            console.log(sendStr)
+            this.ws?.send(sendStr);
+
+
+
             // const symbolList =  SymbolListManager.cointrSymbolList();
             // const args: { bar: string; instId: string; initialNum: number }[] = [];
             // for (const symbol of symbolList) {
