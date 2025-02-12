@@ -1,14 +1,13 @@
-import { channel } from 'diagnostics_channel';
 import WebSocket from 'ws';
 
-export class GateWebSocket {
-    private static instance: GateWebSocket;
+export class GateFutureWebSocket {
+    private static instance: GateFutureWebSocket;
 
-    public static getInstance(): GateWebSocket {
-        if (!GateWebSocket.instance) {
-            GateWebSocket.instance = new GateWebSocket();
+    public static getInstance(): GateFutureWebSocket {
+        if (!GateFutureWebSocket.instance) {
+            GateFutureWebSocket.instance = new GateFutureWebSocket();
         }
-        return GateWebSocket.instance;
+        return GateFutureWebSocket.instance;
     }
 
     constructor() {
