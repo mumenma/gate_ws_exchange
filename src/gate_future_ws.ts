@@ -38,6 +38,11 @@ export class GateFutureWebSocket {
                                 const funding_rate = item["funding_rate"];
                                 // const funding_rate_indicative = item["funding_rate_indicative"];
                                 // console.log(contract,"资金费率",funding_rate)//,funding_rate_indicative)
+                                if ( funding_rate > 0 ) { // 资金费率为正，表示多头支付空头，才能够进行套利
+                                    console.log(contract,"资金费率",funding_rate)
+                                } else {
+                                    console.log(contract,"资金费率",funding_rate,"空头支付多头,所以不进行下单")
+                                }
                             }
                             break;
                         default:
